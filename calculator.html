@@ -1,262 +1,272 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>欧包配方计算器</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenCrumb · 欧包时间计算器</title>
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f4f6fb;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+      background: #f4f6fb;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px 12px 40px;
+      overflow-y: auto;
+    }
 
-.card {
-  background: white;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  width: 320px;
-}
+    .app {
+      width: 100%;
+      max-width: 460px;
+    }
 
-h2 {
-  text-align: center;
-}
+    .header {
+      position: sticky;
+      top: 0;
+      background: #f4f6fb;
+      padding-bottom: 8px;
+      z-index: 10;
+    }
 
-input {
-  width: 100%;
-  padding: 8px;
-  margin: 6px 0 12px;
-  font-size: 16px;
-}
+    .title {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
 
-button {
-  width: 100%;
-  padding: 10px;
-  font-size: 16px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-}
+    .card {
+      background: white;
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
 
-button:hover {
-  background: #43a047;
-}
+    label {
+      font-size: 14px;
+      color: #555;
+    }
 
-.result {
-  margin-top: 15px;
-  background: #f1f3f9;
-  padding: 12px;
-  border-radius: 10px;
-}
-</style>
+    input,
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #4caf50;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #888;
+    }
+
+    .steps label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      background: #f7f8fc;
+      font-size: 15px;
+    }
+
+    .steps input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .done {
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+      margin-top: 16px;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="app">
+    <div class="header">
+      <div class="title">🥖 OpenCrumb 欧包时间计算器</div>
+    </div>
 
-<div class="card">
-  <h2>欧包配方计算器</h2>
+    <div class="card">
+      <label>面团总重量（g）</label>
+      <input id="totalWeight" type="number" placeholder="例如 800" />
 
-  <label>面团总重量 (g)</label>
-  <input id="total" type="number" placeholder="例如 800">
+      <label>含水率（%）</label>
+      <input id="hydration" type="number" value="70" />
 
-  <label>期望含水量 (%)</label>
-  <input id="hydration" type="number" placeholder="例如 70">
+      <label>酵种比例（%）</label>
+      <input id="starterPct" type="number" value="20" />
 
-  <div style="margin: 6px 0 4px; font-size: 14px; color: #666;">配方比例（以面粉 100% 为基准）</div>
-  <label>酵种比例 (%，默认20)</label>
-  <input id="starter" type="number" value="20">
+      <label>盐比例（%）</label>
+      <input id="saltPct" type="number" value="2" />
 
-  <label>盐比例 (%，默认0.5)</label>
-  <input id="salt" type="number" value="0.5">
+      <button onclick="calcRecipe()">计算配方</button>
 
-  <button onclick="calc()">计算配方</button>
+      <div id="recipeResult" class="steps">等待计算配方…</div>
+    </div>
 
-  <div class="result" id="output">等待计算…</div>
+    <div class="card">
+      <label>开始制作时间</label>
+      <input id="startTime" type="time" value="08:00" />
 
-  <hr style="margin:20px 0;">
-  <h3 style="text-align:center;">欧包时间倒推</h3>
+      <label>烘烤时长（分钟）</label>
+      <input id="bake" type="number" value="40" />
 
-  <label>开始时间</label>
-  <input id="startTime" type="time">
+      <button onclick="buildSchedule()">生成时间表</button>
+      <button class="secondary" onclick="clearChecks()">清空勾选</button>
+    </div>
 
-  <label>烘烤时间（分钟）</label>
-  <input id="t4" type="number" value="30">
+    <div class="card">
+      <div class="steps" id="schedule">等待生成时间表…</div>
+    </div>
 
-  <button onclick="buildSchedule()">生成时间表</button>
-  <button onclick="clearChecks()" style="margin-top:8px;background:#888;">清空勾选</button>
+    <div class="footer">OpenCrumb · 手揉欧包流程助手</div>
+  </div>
 
-  <div class="result" id="schedule">等待生成时间表…</div>
-</div>
+  <script>
+    function calcRecipe() {
+      const total = Number(document.getElementById("totalWeight").value);
+      const hydration = Number(document.getElementById("hydration").value) / 100;
+      const starter = Number(document.getElementById("starterPct").value) / 100;
+      const salt = Number(document.getElementById("saltPct").value) / 100;
 
-<script>
-function calc() {
-  let total = Number(document.getElementById("total").value);
-  let hydration = Number(document.getElementById("hydration").value) / 100;
-  let starter = Number(document.getElementById("starter").value) / 100;
-  let salt = Number(document.getElementById("salt").value) / 100;
+      if (!total) {
+        alert("请输入面团总重量");
+        return;
+      }
 
-  if (!total || !hydration) {
-    alert("请填写完整数据");
-    return;
-  }
+      const flour = total / (1 + hydration + starter + salt);
+      const water = flour * hydration;
+      const levain = flour * starter;
+      const saltW = flour * salt;
 
-  // 先求面粉重量
-  let flour = total / (1 + hydration + starter + salt);
-
-  // 其他材料
-  let water = flour * hydration;
-  let levain = flour * starter;
-  let saltWeight = flour * salt;
-
-  // 四舍五入
-  flour = Math.round(flour);
-  water = Math.round(water);
-  levain = Math.round(levain);
-  saltWeight = Math.round(saltWeight);
-
-  document.getElementById("output").innerHTML = `
-    面粉：<b>${flour} g</b><br>
-    水：<b>${water} g</b><br>
-    酵种：<b>${levain} g</b><br>
-    盐：<b>${saltWeight} g</b>
-  `;
-}
-
-function minutesToTimeStr(totalMinutes) {
-  let h = Math.floor(totalMinutes / 60) % 24;
-  let m = totalMinutes % 60;
-  return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-}
-
-function buildSchedule() {
-  const start = document.getElementById("startTime").value;
-  if (!start) {
-    alert("请先填写开始时间");
-    return;
-  }
-
-  let [sh, sm] = start.split(":").map(Number);
-  let currentMinutes = sh * 60 + sm;
-
-  // 固定自溶时间30分钟
-  const t1 = 30;
-
-  // 取输入时间
-  const bakeTime = Number(document.getElementById("t4").value) || 30; // 烘烤时间
-
-  // 手揉欧包各步骤时间（分钟）
-  // 初期拉伸3次，每次间隔30分钟，最后静置50分钟
-  const initialStretchIntervals = [0, 30, 30]; // 第1次拉伸立即开始，后两次间隔30分钟
-  const lastStretchRest = 50;
-
-  // 拉卷子静置50分钟
-  const coilRest = 50;
-
-  // 一发抱叠3次，每次间隔60分钟，最后等待90分钟
-  const foldIntervals = [0, 60, 60]; // 第1次抱叠立即开始，后两次间隔60分钟
-  const lastFoldRest = 90;
-
-  let steps = [];
-
-  // 自溶开始
-  steps.push({label:"自溶开始", time: currentMinutes});
-  currentMinutes += t1;
-
-  // 初期拉伸3次
-  for (let i = 1; i <= 3; i++) {
-    steps.push({label:`初期拉伸${i}开始`, time: currentMinutes});
-    if (i < 3) {
-      currentMinutes += 30; // 拉伸间隔30分钟
-      steps.push({label:`初期拉伸${i}间隔`, time: currentMinutes});
+      const box = document.getElementById("recipeResult");
+      box.innerHTML = `
+        <label>面粉：${Math.round(flour)} g</label>
+        <label>水：${Math.round(water)} g</label>
+        <label>酵种：${Math.round(levain)} g</label>
+        <label>盐：${Math.round(saltW)} g</label>
+      `;
     }
-  }
-  // 最后静置50分钟
-  steps.push({label:"初期拉伸最后静置开始", time: currentMinutes});
-  currentMinutes += lastStretchRest;
 
-  // 拉卷子开始
-  steps.push({label:"拉卷子开始", time: currentMinutes});
-  // 拉卷子静置开始
-  steps.push({label:"拉卷子静置开始", time: currentMinutes});
-  currentMinutes += coilRest;
-
-  // 一发抱叠3次
-  for (let i = 1; i <= 3; i++) {
-    steps.push({label:`一发抱叠${i}开始`, time: currentMinutes});
-    if (i < 3) {
-      currentMinutes += 60; // 抱叠间隔60分钟
-      steps.push({label:`一发抱叠${i}间隔`, time: currentMinutes});
+    function minutesToTimeStr(m) {
+      let h = Math.floor(m / 60) % 24;
+      let mm = m % 60;
+      return String(h).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
     }
-  }
-  // 最后等待90分钟
-  steps.push({label:"一发抱叠3等待", time: currentMinutes});
-  currentMinutes += lastFoldRest;
 
-  // 隔夜发酵开始
-  // 隔夜发酵时间范围 8–15 小时（480–900分钟），自动计算，界面显示为 8 小时起，最长 15 小时
-  const overnightMin = 480; // 8小时
-  const overnightMax = 900; // 15小时
-
-  // 设定当天工作结束时间为 23:00 (1380 分钟)
-  const workEnd = 23 * 60;
-
-  // 先默认隔夜发酵时间为8小时
-  let overnightDuration = overnightMin;
-
-  // 烘烤开始时间
-  let bakingStart = currentMinutes + overnightDuration;
-
-  // 如果烘烤结束时间超过当天工作结束（23:00），则自动将隔夜发酵时间延长到第二天早上烘烤
-  let overnightExtended = false;
-  if ((bakingStart + bakeTime) > workEnd) {
-    // 延长隔夜发酵时间，使烘烤开始时间为第二天早上 8:00（480 分钟）
-    // 计算从当前时间到第二天8点的分钟数
-    const nextDay8am = 24 * 60 + 8 * 60; // 1440 + 480 = 1920
-    overnightDuration = nextDay8am - currentMinutes;
-    if (overnightDuration < overnightMin) {
-      overnightDuration = overnightMin; // 不低于最短8小时
-    } else if (overnightDuration > overnightMax) {
-      overnightDuration = overnightMax; // 不超过最长15小时
+    function addStep(arr, time, label) {
+      arr.push({ time, label });
     }
-    bakingStart = currentMinutes + overnightDuration;
-    overnightExtended = true;
-  }
 
-  steps.push({label:`隔夜发酵开始（8–15小时，自动计算，最短8小时，最长15小时）`, time: currentMinutes});
-  if (overnightExtended) {
-    steps.push({label:`【提示】隔夜发酵时间延长到次日早上烘烤`, time: currentMinutes});
-  }
-  steps.push({label:`隔夜发酵结束（烘烤开始）`, time: bakingStart});
+    function buildSchedule() {
+      const start = document.getElementById("startTime").value;
+      const bake = Number(document.getElementById("bake").value) || 40;
 
-  // 烘烤开始
-  steps.push({label:"烘烤开始", time: bakingStart});
-  // 烘烤结束
-  steps.push({label:"烘烤结束", time: bakingStart + bakeTime});
+      if (!start) return alert("请先填写开始时间");
 
-  // 按时间升序排序（实际已按顺序）
-  // 生成HTML
-  let html = "";
-  for (let step of steps) {
-    let timeStr = minutesToTimeStr((step.time + 1440) % 1440);
-    html += `<label style="display:block;margin:6px 0;">
-      <input type="checkbox"> ${timeStr} ${step.label}
-    </label>`;
-  }
+      let [h, m] = start.split(":").map(Number);
+      let current = h * 60 + m;
 
-  document.getElementById("schedule").innerHTML = html;
-}
+      const steps = [];
 
-function clearChecks() {
-  document.querySelectorAll('#schedule input[type="checkbox"]').forEach(cb => cb.checked = false);
-}
-</script>
+      // 初期拉伸三次
+      addStep(steps, current, "开始拉伸①");
+      current += 30;
 
+      addStep(steps, current, "开始拉伸②");
+      current += 30;
+
+      addStep(steps, current, "开始拉伸③");
+      current += 50;
+
+      // 拉卷子
+      addStep(steps, current, "拉卷子");
+      current += 50;
+
+      // 一发抱叠三次
+      addStep(steps, current, "抱叠①");
+      current += 60;
+
+      addStep(steps, current, "抱叠②");
+      current += 60;
+
+      addStep(steps, current, "抱叠③");
+      current += 90;
+
+      // 隔夜发酵：至少8小时
+      addStep(steps, current, "入发酵篮 · 隔夜发酵开始");
+
+      let overnightEnd = current + 8 * 60;
+
+      // 如果烘烤会超过23点 → 延长到次日8点
+      let bakeEnd = overnightEnd + bake;
+      if (bakeEnd > 23 * 60) {
+        overnightEnd = 24 * 60 + 8 * 60;
+      }
+
+      addStep(steps, overnightEnd, "隔夜发酵结束 · 准备烘烤");
+
+      // 烘烤
+      addStep(steps, overnightEnd, "开始烘烤");
+      addStep(steps, overnightEnd + bake, "烘烤完成 🎉");
+
+      // 渲染
+      const box = document.getElementById("schedule");
+      box.innerHTML = "";
+
+      steps.forEach((s, i) => {
+        const id = "cb" + i;
+        box.innerHTML += `
+          <label id="lbl${i}">
+            <input type="checkbox" id="${id}" onchange="toggleDone(${i})">
+            ${minutesToTimeStr(s.time)} · ${s.label}
+          </label>
+        `;
+      });
+    }
+
+    function toggleDone(i) {
+      const cb = document.getElementById("cb" + i);
+      const lbl = document.getElementById("lbl" + i);
+      lbl.classList.toggle("done", cb.checked);
+    }
+
+    function clearChecks() {
+      document.querySelectorAll("#schedule input").forEach((c) => {
+        c.checked = false;
+      });
+      document.querySelectorAll("#schedule label").forEach((l) => {
+        l.classList.remove("done");
+      });
+    }
+  </script>
 </body>
 </html>
